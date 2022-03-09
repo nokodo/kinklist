@@ -18,7 +18,7 @@ table {
 }
 
 th {
-	border:solid #999 1px;
+	border:solid #222 1px;
 	border-right:none;
 	margin:0;
 	padding:4px;
@@ -33,12 +33,12 @@ th.choicesCol {
 
 th + th { border-left:none }
 
-th:last-child { border-right:solid #999 1px }
+th:last-child { border-right:solid #222 1px }
 
 td {
-	border-left:solid #999 1px;
-	border-bottom:solid #999 1px;
-	border-right:solid #999 1px;
+	border-left:solid #222 1px;
+	border-bottom:solid #222 1px;
+	border-right:solid #222 1px;
 	margin:0;
 	padding:4px;
 	padding-right:2px
@@ -115,7 +115,7 @@ td + td { border-left-style:none }
 	box-sizing:border-box;
 	color:#FFF;
 	text-transform:uppercase;
-	background-color:#4980ae;
+	background-color:#308dda;
 	font-size:18px;
 	width:150px;
 	height:36px;
