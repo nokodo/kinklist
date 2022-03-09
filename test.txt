@@ -7,15 +7,15 @@
 * Small
 ? < 100 KB
 
-#Clothing
+#Languages
 (Self, Partner)
 * JS
 ? Something
 * Java
 ? Something 2
 
-#No consent
-(Aggressor, Target)
+#Dependencies
+(Parent, Target)
 * Non
 ? waoifjowifoiwef
 * Bla
