@@ -50,20 +50,27 @@ td + td { border-left-style:none }
 	box-sizing:border-box;
 	width:15px;
 	height:15px;
-	opacity:.35;
-	overflow:hidden;
-	text-indent:100px;
-	border:solid #000 1px;
+	opacity:.2;
+  border:solid #000 1px;
 	border-radius:50%;
 	outline-style:none!important;
 	vertical-align:middle;
 	display:inline-block;
 	cursor:pointer;
 	font-size:0;
-	padding:0
+	padding:0;
+  position: relative;
+}
+.choice::after {
+	content: '';
+	width:19px;
+	height:19px;
+  margin: -5px;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-.choices .choice { transition:all .3s ease-in-out }
+.choices .choice { transition:all .3s ease-in-out, opacity .1s ease-in-out }
 
 .choice + .choice { margin-left:5px }
 
