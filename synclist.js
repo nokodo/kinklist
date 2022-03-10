@@ -41,7 +41,6 @@ $(function(){
     var imgurClientId = '9db53e5936cd02f';
 
     inputKinks = {
-        $columns: [],
         createCategory: function(name, fields){
             var $category = $('<div class="kinkCategory">')
                     .addClass('cat-' + strToClass(name))
@@ -96,44 +95,8 @@ $(function(){
 
             return $row;
         },
-        createColumns: function(){
-            var colClasses = ['100', '50', '33', '25'];
-
-            var numCols = Math.floor((document.body.scrollWidth - 20) / 400);
-            if(!numCols) numCols = 1;
-            if(numCols > 4) numCols = 4;
-            var colClass = 'col' + colClasses[numCols - 1];
-
-            inputKinks.$columns = [];
-            for(var i = 0; i < numCols; i++){
-                inputKinks.$columns.push($('<div>').addClass('col ' + colClass).appendTo($('#InputList')));
-            }
-        },
-        placeCategories: function($categories){
-            var $body = $('body');
-            var totalHeight = 0;
-            for(var i = 0; i < $categories.length; i++) {
-                var $clone = $categories[i].clone().appendTo($body);
-                var height = $clone.height();;
-                totalHeight += height;
-                $clone.remove();
-            }
-
-            var colHeight = totalHeight / (inputKinks.$columns.length);
-            var colIndex = 0;
-            for(var i = 0; i < $categories.length; i++) {
-                var curHeight = inputKinks.$columns[colIndex].height();
-                var catHeight = $categories[i].height();
-                if(curHeight + (catHeight / 2) > colHeight) colIndex++;
-                while(colIndex >= inputKinks.$columns.length) {
-                    colIndex--;
-                }
-                inputKinks.$columns[colIndex].append($categories[i]);
-            }
-        },
         fillInputList: function(){
             $('#InputList').empty();
-            inputKinks.createColumns();
 
             var $categories = [];
             var kinkCats = Object.keys(kinks);
@@ -149,9 +112,8 @@ $(function(){
                     $tbody.append(inputKinks.createKink(catName, fields, kinkArr[k]));
                 }
 
-                $categories.push($category);
+                $category.appendTo($('#InputList'));
             }
-            inputKinks.placeCategories($categories);
 
             // Make things update hash
             $('#InputList').find('button.choice').on('click', function(){
@@ -209,23 +171,6 @@ $(function(){
             $('#Clear').on('click', inputKinks.clear);
             $('#Export').on('click', inputKinks.export);
             $('#URL').on('click', function(){ this.select(); });
-
-            // On resize, redo columns
-            (function(){
-
-                var lastResize = 0;
-                $(window).on('resize', function(){
-                    var curTime = (new Date()).getTime();
-                    lastResize = curTime;
-                    setTimeout(function(){
-                        if(lastResize === curTime) {
-                            inputKinks.fillInputList();
-                            inputKinks.parseHash();
-                        }
-                    }, 500);
-                });
-
-            })();
         },
         hashChars: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.=+*^!@",
         maxPow: function(base, maxVal) {
