@@ -40,22 +40,6 @@ $(function(){
 
     var imgurClientId = '9db53e5936cd02f';
 
-    function changeList(type) {
-      fileToRead = type + '.txt';
-        $.get(fileToRead, function(data) {
-            $('#Kinks').text(data);
-            var selection = inputKinks.saveSelection();
-            var kinksText = $('#Kinks').val();
-            kinks = inputKinks.parseKinksText(kinksText);
-            inputKinks.fillInputList();
-        }, 'text');
-    }
-
-    $("#listType").change(function() {
-        changeList($("#listType").val());
-    }); 
-    changeList("test");
-    
     inputKinks = {
         $columns: [],
         createCategory: function(name, fields){
@@ -169,14 +153,52 @@ $(function(){
                 location.hash = inputKinks.updateHash();
             });
         },
-        init: function(){
-            // Set up DOM
-            inputKinks.fillInputList();
+        clear: function() {
+            const url = new URL(window.location.href);
+            if (url.hash) {
+                url.hash = "";
+                window.history.pushState({}, "", url);
+                inputKinks.parseHash();
+            }
+        },
+        setListState:  function (type) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('list', type);
+            window.history.pushState({}, "", url);
 
-            // Read hash
-            inputKinks.parseHash();
+            inputKinks.changeList(type);
+        },
+        changeList: function (type, onLoad) {
+            fileToRead = type + '.txt';
+            $.get(fileToRead, function(data) {
+                $('#Kinks').text(data);
+                var selection = inputKinks.saveSelection();
+                var kinksText = $('#Kinks').val();
+                kinks = inputKinks.parseKinksText(kinksText);
+                inputKinks.fillInputList();
+                inputKinks.parseHash()
+            }, 'text');
+        },
+        loadFromUrl: function () {
+            const url = new URL(window.location.href);
+            var listType = url.searchParams.get('list') ?? "test";
+
+            $("#listType").val(listType);
+            inputKinks.changeList(listType);
+        },
+        init: function(){
+            inputKinks.loadFromUrl();
+            window.onpopstate = event => {
+                inputKinks.loadFromUrl();
+            }
+            $("#listType").change(function() {
+                console.log("change");
+                const newListType = $("#listType").val();
+                inputKinks.setListState(newListType);
+            });
 
             // Make export button work
+            $('#Clear').on('click', inputKinks.clear);
             $('#Export').on('click', inputKinks.export);
             $('#URL').on('click', function(){ this.select(); });
 
@@ -533,7 +555,10 @@ $(function(){
         },
         parseHash: function(){
             var hash = location.hash.substring(1);
-            if(hash.length < 10) return;
+            if(!hash.length) {
+                $('#InputList .selected').removeClass('selected');
+                return;
+            }
 
             var values = inputKinks.decode(Object.keys(colors).length, hash);
             var valueIndex = 0;
