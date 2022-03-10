@@ -60,8 +60,13 @@ $(function(){
 
             return $category;
         },
-        createChoice: function(){
-            var $container = $('<div>').addClass('choices');
+        createChoice: function(catName, kinkName, field, fieldIndex){
+            var $container = $('<div>')
+                .addClass('choices')
+                .data('cat', catName)
+                .data('kink', kinkName)
+                .data('field', field)
+                .data('fieldIndex', fieldIndex);
             var levels = Object.keys(level);
             for(var i = 0; i < levels.length; i++) {
                 $('<button>')
@@ -78,17 +83,17 @@ $(function(){
             }
             return $container;
         },
-        createKink: function(fields, kink){
+        createKink: function(catName, fields, kink){
             var $row = $('<tr>').data('kink', kink.kinkName).addClass('kinkRow');
             for(var i = 0; i < fields.length; i++) {
-                var $choices = inputKinks.createChoice();
-                $choices.data('field', fields[i]);
+                var $choices = inputKinks.createChoice(catName, kink.kinkName, fields[i], i);
                 $choices.addClass('choice-' + strToClass(fields[i]));
                 $('<td>').append($choices).appendTo($row);
             }
             var kinkLabel = $('<td>').text(kink.kinkName).appendTo($row);
             if(kink.kinkDesc) {showDescriptionButton(kink.kinkDesc, kinkLabel);}
             $row.addClass('kink-' + strToClass(kink.kinkName));
+
             return $row;
         },
         createColumns: function(){
@@ -141,7 +146,7 @@ $(function(){
                 var $category = inputKinks.createCategory(catName, fields);
                 var $tbody = $category.find('tbody');
                 for(var k = 0; k < kinkArr.length; k++) {
-                    $tbody.append(inputKinks.createKink(fields, kinkArr[k]));
+                    $tbody.append(inputKinks.createKink(catName, fields, kinkArr[k]));
                 }
 
                 $categories.push($category);
@@ -165,8 +170,6 @@ $(function(){
             const url = new URL(window.location.href);
             url.searchParams.set('list', type);
             window.history.pushState({}, "", url);
-
-            inputKinks.changeList(type);
         },
         changeList: function (type, onLoad) {
             fileToRead = type + '.txt';
@@ -176,7 +179,7 @@ $(function(){
                 var kinksText = $('#Kinks').val();
                 kinks = inputKinks.parseKinksText(kinksText);
                 inputKinks.fillInputList();
-                inputKinks.parseHash()
+                if (onLoad) onLoad();
             }, 'text');
         },
         loadFromUrl: function () {
@@ -184,7 +187,7 @@ $(function(){
             var listType = url.searchParams.get('list') ?? "test";
 
             $("#listType").val(listType);
-            inputKinks.changeList(listType);
+            inputKinks.changeList(listType, () => inputKinks.parseHash());
         },
         init: function(){
             inputKinks.loadFromUrl();
@@ -192,9 +195,14 @@ $(function(){
                 inputKinks.loadFromUrl();
             }
             $("#listType").change(function() {
-                console.log("change");
                 const newListType = $("#listType").val();
+
+                var selections = inputKinks.getSelections();
                 inputKinks.setListState(newListType);
+                inputKinks.changeList(newListType, () => {
+                    inputKinks.setSelections(selections);
+                    location.hash = inputKinks.updateHash();
+                });
             });
 
             // Make export button work
@@ -542,6 +550,42 @@ $(function(){
             }
             output.reverse();
             return output;
+        },
+        setSelections: function(selections) {
+            $('#InputList .choices').each(function(){
+                var $this = $(this);
+
+                var cat = $this.data("cat");
+                var kink = $this.data("kink");
+                var field = $this.data("field");
+                var fieldIndex = $this.data("fieldIndex");
+
+                if ((cat in selections)
+                    && (kink in selections[cat]
+                    && (selections[cat][kink].length >= fieldIndex))) {
+                    var value = selections[cat][kink][fieldIndex];
+                    $this.children().eq(value).addClass('selected')
+                        .siblings().removeClass('selected');
+                }
+            });
+        },
+        getSelections: function() {
+            var selections = {};
+            $('#InputList .choices').each(function(){
+                var $this = $(this);
+                var lvlInt = $this.find('.selected').data('levelInt');
+                if(!lvlInt) return; // ignore unset values
+
+                var cat = $this.data("cat");
+                var kink = $this.data("kink");
+                var field = $this.data("field");
+                var fieldIndex = $this.data("fieldIndex");
+
+                if (!(cat in selections)) selections[cat] = {};
+                if (!(kink in selections[cat])) selections[cat][kink] = [];
+                selections[cat][kink][fieldIndex] = lvlInt;
+            });
+            return selections;
         },
         updateHash: function(){
             var hashValues = [];
