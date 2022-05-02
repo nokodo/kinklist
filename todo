@@ -1,0 +1,2 @@
+- Fix error if data in URL is larger than the current one 
+- ensure the behavior where it stacks on history twice when changing sheets, once with raw values, once with interpolation - this easily gives best of both worlds without needing a toggle
